@@ -212,11 +212,15 @@ void Solver::updateProblem<PROBLEME_A_RESOUDRE>(PROBLEME_A_RESOUDRE& problem,
     auto& variables = solver->variables();
     int nbVar = problem.NombreDeVariables;
 
+    std::string Xstring = " ";
     // Extracting variable values and reduced costs
     for (int idxVar = 0; idxVar < nbVar; ++idxVar) {
         auto& var = variables[idxVar];
         problem.X[idxVar] = var->solution_value();
+        Xstring += std::to_string(problem.X[idxVar]) + " ";
     }
+    LOG_ALL(info) << "updateProblem<PROBLEME_A_RESOUDRE> \n"
+                  << "  X = [" << Xstring << "]";
 }
 
 static int extractBasisStatus(operations_research::MPVariable& var)
@@ -261,6 +265,26 @@ static int extractBasisStatus(operations_research::MPConstraint& cnt)
     return basisStatus;
 }
 
+static std::string basisStatusString(int basisStatus) {
+    switch (basisStatus) {
+        case EN_BASE:
+            return "EN_BASE";
+        case EN_BASE_LIBRE:
+            return "EN_BASE_LIBRE";
+        case EN_BASE_SUR_BORNE_INF:
+            return "EN_BASE_SUR_BORNE_INF";
+        case EN_BASE_SUR_BORNE_SUP:
+            return "EN_BASE_SUR_BORNE_SUP";
+        case HORS_BASE_SUR_BORNE_INF:
+            return "HORS_BASE_SUR_BORNE_INF";
+        case HORS_BASE_SUR_BORNE_SUP:
+            return "HORS_BASE_SUR_BORNE_SUP";
+        case HORS_BASE_A_ZERO:
+            return "HORS_BASE_A_ZERO";
+        default:
+            return "Unknown(" + std::to_string(basisStatus) + ")";
+    }
+}
 
 template<>
 void Solver::updateProblem<PROBLEME_SIMPLEXE>(PROBLEME_SIMPLEXE& problem,
@@ -270,12 +294,18 @@ void Solver::updateProblem<PROBLEME_SIMPLEXE>(PROBLEME_SIMPLEXE& problem,
     int nbVar = problem.NombreDeVariables;
 
     // Extracting variable values and reduced costs
+
+
+    std::string Xstring = " ";
     for (int idxVar = 0; idxVar < nbVar; ++idxVar) {
         auto& var = variables[idxVar];
         problem.X[idxVar] = var->solution_value();
         problem.CoutsReduits[idxVar] = var->reduced_cost();
         problem.PositionDeLaVariable[idxVar] = extractBasisStatus(*var);
+        Xstring += "(" + std::to_string(problem.X[idxVar]) + ", " + basisStatusString(problem.PositionDeLaVariable[idxVar]) + ") ";
     }
+    LOG_ALL(info) << "updateProblem<PROBLEME_SIMPLEXE> \n"
+                  << "  X = [" << Xstring << "]";
 
     auto& constraints = solver->constraints();
     int nbRow = problem.NombreDeContraintes;
