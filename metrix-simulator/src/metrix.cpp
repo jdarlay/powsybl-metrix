@@ -193,7 +193,7 @@ int main(int argc, char* argv[])
             }
 
             // Resolution du probleme
-            Calculer comput(res, variantesOrdonnees);
+            Calculer comput(res, variantesOrdonnees, config::inputConfiguration().filepathResults() + "_timings");
 
 
             // Lancement du calcul

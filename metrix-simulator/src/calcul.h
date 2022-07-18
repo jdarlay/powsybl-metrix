@@ -269,7 +269,7 @@ public:
     int getClosestTapPosition(TransformateurDephaseur* td, double angleFinal);
     bool calculVariationsMarginales(FILE* fr, const std::map<std::shared_ptr<Incident>, int>& incidentsContraignants);
     static double round(double x, double prec); // utiliser pour arrondir les calculs
-    Calculer(Reseau& res, MapQuadinVar& variantesOrdonnees);
+    Calculer(Reseau& res, MapQuadinVar& variantesOrdonnees, const std::string& timingsFileName);
     int PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Variante>& varianteCourante);
     void comput_ParticipationGrp(const std::shared_ptr<Incident>& icdt) const;
     void fixerVariablesEntieres(); // Fixe les variables entieres pour lancement avec SPX
@@ -426,6 +426,8 @@ private:
         bool skipDisplay;
     };
     using CostDefMap = std::map<int, std::vector<CostDef>>;
+
+    std::ofstream timingFile_;
 
 private:
     static void afficherVariantesCle(const MapQuadinVar& variantesOrdonnees,

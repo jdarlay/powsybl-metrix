@@ -106,7 +106,10 @@ string Contrainte::typeDeContrainteToString() const
 }
 
 
-Calculer::Calculer(Reseau& res, MapQuadinVar& variantesOrdonnees) : res_(res), variantesOrdonnees_(variantesOrdonnees)
+Calculer::Calculer(Reseau& res, MapQuadinVar& variantesOrdonnees, const std::string& timingsFileName)
+        : res_(res),
+          variantesOrdonnees_(variantesOrdonnees),
+          timingFile_(timingsFileName)
 {
     #ifdef USE_ORTOOLS
     solver_simplex_ = std::make_shared<ortools::Solver>(config::configuration().solverChoice());
@@ -305,6 +308,8 @@ int Calculer::resolutionProbleme()
             LOG_RES() << "---------------------";
             LOG_RES() << "---------------------\n";
 
+           timingFile_ << err::ioDico().msg("INFOVariante", c_fmt("%d", varianteCourante_->num_)) << '\n';
+
             // Update of the remaining elements of the network for each variant
             status = res_.modifReseau(varianteCourante_);
 
@@ -456,7 +461,12 @@ int Calculer::PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Varian
 
         // Resolution du probleme
         //----------------------
+
+        auto start = std::chrono::system_clock::now();
         solver_pne_->solve(&pbPNE_);
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
+        timingFile_ << "solver_pne_->solve MIP " << elapsed.count() << "ms" << std::endl;
+
         pbExistenceDUneSolution_ = pbPNE_.ExistenceDUneSolution;
 
         if (pbExistenceDUneSolution_ == SOLUTION_OPTIMALE_TROUVEE
@@ -542,7 +552,11 @@ int Calculer::PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Varian
             SPX_EcrireProblemeAuFormatMPS(pb_);
         }
 
+        auto start = std::chrono::system_clock::now();
         solver_pne_->solve(&pb_);
+        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - start);
+        timingFile_ << "solver_pne_->solve SPX " << elapsed.count() << "ms" << std::endl;
+
         pbNbVarDeBaseComplementaires_ = pb_.NbVarDeBaseComplementaires;
         pbExistenceDUneSolution_ = pb_.ExistenceDUneSolution;
 
@@ -976,7 +990,10 @@ void Calculer::fixerVariablesEntieres()
     }
 }
 
-Calculer::~Calculer() { icdtQdt_.clear(); }
+Calculer::~Calculer() {
+    icdtQdt_.clear();
+    timingFile_.close();
+}
 
 void Calculer::printStats()
 {
