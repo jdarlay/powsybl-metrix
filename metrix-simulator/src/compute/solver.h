@@ -22,7 +22,7 @@ public:
     Solver();
 
     void solve(PROBLEME_A_RESOUDRE* pne_problem) final;
-    void solve(PROBLEME_SIMPLEXE* spx_problem) final;
+    void solve(PROBLEME_SIMPLEXE* spx_problem, bool forceSirius=false) final;
 
     void free() final;
 

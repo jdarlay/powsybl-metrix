@@ -29,7 +29,13 @@ const std::map<config::Configuration::SolverChoice, Solver::SolverChoice> Solver
 
 Solver::Solver(config::Configuration::SolverChoice solver_choice) : solver_choice_(solver_choice) {}
 
-void Solver::solve(PROBLEME_SIMPLEXE* spx_problem) { solve_impl(spx_problem); }
+void Solver::solve(PROBLEME_SIMPLEXE* spx_problem, bool forceSirius) {
+    config::Configuration::SolverChoice old_solver_choice = solver_choice_;
+    if (forceSirius)
+        solver_choice_ = config::Configuration::SolverChoice::SIRIUS;
+    solve_impl(spx_problem);
+    solver_choice_ = old_solver_choice;
+}
 
 static std::string convertTypeDeBorneDeLaVariableToParameterAsString(int nbVar, int* typeDeBorneDeLaVariable)
 {

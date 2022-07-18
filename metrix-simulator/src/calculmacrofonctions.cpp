@@ -411,7 +411,7 @@ int Calculer::resolutionProbleme()
 }
 
 
-int Calculer::PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Variante>& varianteCourante)
+int Calculer::PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Variante>& varianteCourante, bool forcerSirius)
 {
     if (config::inputConfiguration().printConstraintsMatrix()) {
         printMatriceDesContraintes();
@@ -542,7 +542,8 @@ int Calculer::PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Varian
             SPX_EcrireProblemeAuFormatMPS(pb_);
         }
 
-        solver_pne_->solve(&pb_);
+        solver_pne_->solve(&pb_, forcerSirius);
+
         pbNbVarDeBaseComplementaires_ = pb_.NbVarDeBaseComplementaires;
         pbExistenceDUneSolution_ = pb_.ExistenceDUneSolution;
 

@@ -10,7 +10,7 @@ public:
     virtual ~ISolver() = default;
 
     virtual void solve(PROBLEME_A_RESOUDRE* pne_problem) = 0;
-    virtual void solve(PROBLEME_SIMPLEXE* spx_problem) = 0;
+    virtual void solve(PROBLEME_SIMPLEXE* spx_problem, bool forceSirius=false) = 0;
 
     virtual void free() = 0;
 };

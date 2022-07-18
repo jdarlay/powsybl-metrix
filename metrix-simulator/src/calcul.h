@@ -270,7 +270,7 @@ public:
     bool calculVariationsMarginales(FILE* fr, const std::map<std::shared_ptr<Incident>, int>& incidentsContraignants);
     static double round(double x, double prec); // utiliser pour arrondir les calculs
     Calculer(Reseau& res, MapQuadinVar& variantesOrdonnees);
-    int PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Variante>& varianteCourante);
+    int PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Variante>& varianteCourante, bool forcerSirius=false);
     void comput_ParticipationGrp(const std::shared_ptr<Incident>& icdt) const;
     void fixerVariablesEntieres(); // Fixe les variables entieres pour lancement avec SPX
 
