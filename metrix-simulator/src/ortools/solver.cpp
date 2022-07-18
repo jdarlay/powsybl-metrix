@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "err/error.h"
+
 using namespace operations_research;
 
 namespace ortools
@@ -212,15 +214,16 @@ void Solver::updateProblem<PROBLEME_A_RESOUDRE>(PROBLEME_A_RESOUDRE& problem,
     auto& variables = solver->variables();
     int nbVar = problem.NombreDeVariables;
 
-    std::string Xstring = " ";
+    std::string Xstring = "\n";
     // Extracting variable values and reduced costs
     for (int idxVar = 0; idxVar < nbVar; ++idxVar) {
         auto& var = variables[idxVar];
         problem.X[idxVar] = var->solution_value();
-        Xstring += std::to_string(problem.X[idxVar]) + " ";
+        Xstring += "         " + std::to_string(problem.X[idxVar]) + "\n";
     }
     LOG_ALL(info) << "updateProblem<PROBLEME_A_RESOUDRE> \n"
-                  << "  X = [" << Xstring << "]";
+                  << "  objval: " << solver->Objective().Value() << "\n"
+                  << "  X = [" << Xstring << "  ]";
 }
 
 static int extractBasisStatus(operations_research::MPVariable& var)
@@ -244,17 +247,13 @@ static int extractBasisStatus(operations_research::MPVariable& var)
             return HORS_BASE_SUR_BORNE_SUP;
         case MPSolver::FIXED_VALUE:
             return HORS_BASE_SUR_BORNE_INF;
-        case MPSolver::BASIC: {
-            if (fabs(var.lb() - solutionValue) < config::constants::epsilon) {
-                return EN_BASE_SUR_BORNE_INF;
-            } else if (fabs(var.ub() - solutionValue) < config::constants::epsilon) {
-                return EN_BASE_SUR_BORNE_SUP;
-            }
+        case MPSolver::BASIC:
             return EN_BASE;
+        default: {
+            std::ostringstream ss;
+            ss << "Unknown ortoolsBasisStatus: " << ortoolsBasisStatus;
+            throw ErrorI(ss.str());
         }
-        default:
-            assert(false);
-            return 0;
     }
 }
 
@@ -263,6 +262,23 @@ static int extractBasisStatus(operations_research::MPConstraint& cnt)
     // extract and return correct basis status
     int basisStatus = (cnt.basis_status() == MPSolver::FREE ? EN_BASE_LIBRE : EN_BASE);
     return basisStatus;
+}
+
+static std::string basisStatusString(MPSolver::BasisStatus basisStatus) {
+    switch (basisStatus) {
+        case MPSolver::BasisStatus::FREE:
+            return "MPS::FREE";
+        case MPSolver::BasisStatus::AT_LOWER_BOUND:
+            return "MPS::AT_LOWER_BOUND";
+        case MPSolver::BasisStatus::AT_UPPER_BOUND:
+            return "MPS::AT_UPPER_BOUND";
+        case MPSolver::BasisStatus::FIXED_VALUE:
+            return "MPS::FIXED_VALUE";
+        case MPSolver::BasisStatus::BASIC:
+            return "MPS::BASIC";
+        default:
+            return "Unknown(" + std::to_string((int)basisStatus) + ")";
+    }
 }
 
 static std::string basisStatusString(int basisStatus) {
@@ -295,18 +311,16 @@ void Solver::updateProblem<PROBLEME_SIMPLEXE>(PROBLEME_SIMPLEXE& problem,
 
     // Extracting variable values and reduced costs
 
-
-    std::string Xstring = " ";
+    std::string Xstring = "\n";
     for (int idxVar = 0; idxVar < nbVar; ++idxVar) {
         auto& var = variables[idxVar];
         problem.X[idxVar] = var->solution_value();
         problem.CoutsReduits[idxVar] = var->reduced_cost();
         problem.PositionDeLaVariable[idxVar] = extractBasisStatus(*var);
-        Xstring += "(" + std::to_string(problem.X[idxVar]) + ", " + basisStatusString(problem.PositionDeLaVariable[idxVar]) + ") ";
+        Xstring += "         (" + std::to_string(problem.X[idxVar]) + ", " + basisStatusString(problem.PositionDeLaVariable[idxVar]) + ")\n";
     }
-    LOG_ALL(info) << "updateProblem<PROBLEME_SIMPLEXE> \n"
-                  << "  X = [" << Xstring << "]";
 
+    std::string Cstring = "\n";
     auto& constraints = solver->constraints();
     int nbRow = problem.NombreDeContraintes;
     int idxCmpVar = 0;
@@ -314,12 +328,18 @@ void Solver::updateProblem<PROBLEME_SIMPLEXE>(PROBLEME_SIMPLEXE& problem,
         auto& row = constraints[idxRow];
         problem.CoutsMarginauxDesContraintes[idxRow] = row->dual_value();
         int basisStatus = extractBasisStatus(*row);
+        Cstring += "         (" + std::to_string(problem.CoutsMarginauxDesContraintes[idxRow]) + ", " + basisStatusString(row->basis_status()) + ", " + basisStatusString(basisStatus) + ")\n";
         if (basisStatus == EN_BASE_LIBRE) {
             problem.NbVarDeBaseComplementaires++;
             problem.ComplementDeLaBase[idxCmpVar] = idxRow;
             idxCmpVar++;
         }
     }
+
+    LOG_ALL(info) << "updateProblem<PROBLEME_SIMPLEXE> \n"
+                  << "  objval: " << solver->Objective().Value() << "\n"
+                  << "  X = [" << Xstring << "  ]\n"
+                  << "  C = [" << Cstring << "  ]";
 }
 
 template<>
