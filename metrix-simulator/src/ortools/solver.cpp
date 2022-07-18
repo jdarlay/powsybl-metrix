@@ -1,6 +1,10 @@
 #include "solver.h"
 #include "err/error.h"
 
+extern "C" {
+#include "xprs.h"
+}
+
 #include <iostream>
 
 using namespace operations_research;
@@ -71,6 +75,11 @@ std::shared_ptr<operations_research::MPSolver> Solver::toMPSolver(const PROBLEME
     solver->SetSolverSpecificParametersAsString(
         convertTypeDeBorneDeLaVariableToParameterAsString(problem.NombreDeVariables, problem.TypeDeBorneDeLaVariable));
 
+    for (int i = (int)problem.PositionCoupes; i < problem.NombreDeContraintes; i++) {
+        auto constraint = solver->constraint(i);
+        constraint->set_is_lazy(true);
+    }
+    
     return solver;
 }
 

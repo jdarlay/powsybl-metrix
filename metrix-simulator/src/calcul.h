@@ -456,6 +456,8 @@ private:
 
     void printStats();
     void printMatriceDesContraintes();
+
+    size_t positionCoupes = 0;
 };
 
 #endif

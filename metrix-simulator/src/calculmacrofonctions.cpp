@@ -453,6 +453,7 @@ int Calculer::PneSolveur(TypeDeSolveur typeSolveur, const std::shared_ptr<Varian
         pbPNE_.IndicesColonnes = &pbIndicesColonnes_[0];
         pbPNE_.VariablesDualesDesContraintes = &pbCoutsMarginauxDesContraintes_[0];
         pbPNE_.AlgorithmeDeResolution = SIMPLEXE;
+        pbPNE_.PositionCoupes = positionCoupes;
 
         // Resolution du probleme
         //----------------------
@@ -684,6 +685,7 @@ int Calculer::resolutionUnProblemeDodu(const std::shared_ptr<Variante>& variante
 
     int nbNewContreParVariante = 0;
     unsigned int compteur = 0;
+    positionCoupes = pbContraintes_.size();
     while (existe_contrainte_active) {
         // I-tests d arret
         //***************
