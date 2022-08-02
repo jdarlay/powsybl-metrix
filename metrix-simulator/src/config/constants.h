@@ -40,7 +40,7 @@ constexpr unsigned int nb_active_constraints = 300; // taille d'allocation de la
 constexpr unsigned int nb_max_constraints
     = 5000; // nombre max de contraintes ajoutees pour le simplexe au total lors de la resolution
 constexpr unsigned int nb_max_contraints_by_iteration
-    = 200; // Limitation du nombre de contraintes par itération (y compris parades)
+    = UINT_MAX; // Limitation du nombre de contraintes par itération (y compris parades)
 
 constexpr unsigned int factor_max_size_dodu = 3;     // ce coeff *nbQuadripole = taille du vecteur de contrainte (DODU)
 constexpr unsigned int nb_ouvrages_by_incident = 10; // nombre max d ouvrage par incident
