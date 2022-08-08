@@ -11,6 +11,7 @@
 #pragma once
 
 #include <cmath>
+#include <climits>
 
 // Traces PNE/SPX
 #define TRACES_PNE NON_PNE   /*NON_PNE*/
